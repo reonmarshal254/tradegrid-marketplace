@@ -5,6 +5,7 @@
   "private": true,
   "license": "MIT",
   "scripts": {
+    "postinstall": "npm install --prefix backend --include=dev && npm install --prefix frontend --include=dev",
     "install:all": "npm install --prefix backend --include=dev && npm install --prefix frontend --include=dev",
     "dev": "concurrently -k -n backend,frontend -c blue,green \"npm run dev:backend\" \"npm run dev:frontend\"",
     "dev:backend": "npm run dev --prefix backend",
