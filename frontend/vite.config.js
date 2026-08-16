@@ -10,6 +10,7 @@ export default defineConfig({
     allowedHosts: [
       'localhost',
       'tradegrid-marketplace.vercel.app',
+      'tradegrid-backend.onrender.com',
     ],
     proxy: {
       '/api': {
