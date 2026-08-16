@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">TRADEGRID</string>
+    <string name="title_activity_main">TRADEGRID</string>
+    <string name="package_name">com.tradegrid.marketplace</string>
+    <string name="custom_url_scheme">com.tradegrid.marketplace</string>
+</resources>

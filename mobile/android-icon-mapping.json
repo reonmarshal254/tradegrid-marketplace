@@ -1,0 +1,44 @@
+{
+  "appName": "TRADEGRID",
+  "packageName": "com.tradegrid.marketplace",
+  "iconMapping": {
+    "mdpi": {
+      "source": "public/Android Icons/48x48.png",
+      "destination": "android/app/src/main/res/mipmap-mdpi/ic_launcher.png",
+      "size": "48x48",
+      "density": "~160dpi"
+    },
+    "hdpi": {
+      "source": "public/Android Icons/72x72.png",
+      "destination": "android/app/src/main/res/mipmap-hdpi/ic_launcher.png",
+      "size": "72x72",
+      "density": "~240dpi"
+    },
+    "xhdpi": {
+      "source": "public/Android Icons/96x96.png",
+      "destination": "android/app/src/main/res/mipmap-xhdpi/ic_launcher.png",
+      "size": "96x96",
+      "density": "~320dpi"
+    },
+    "xxhdpi": {
+      "source": "public/Android Icons/144x144.png",
+      "destination": "android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png",
+      "size": "144x144",
+      "density": "~480dpi"
+    },
+    "xxxhdpi": {
+      "source": "public/Android Icons/192x192.png",
+      "destination": "android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png",
+      "size": "192x192",
+      "density": "~640dpi"
+    }
+  },
+  "splashScreen": {
+    "backgroundColor": "#4f46e5",
+    "imageSource": "public/Favicons/favicon-192x192.png"
+  },
+  "adaptiveIcon": {
+    "foreground": "public/Favicons/favicon-192x192.png",
+    "background": "#4f46e5"
+  }
+}

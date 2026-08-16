@@ -1,0 +1,12 @@
+{
+  "appId": "com.tradegrid.marketplace",
+  "appName": "TRADEGRID",
+  "webDir": "dist",
+  "android": {
+    "backgroundColor": "#4f46e5"
+  },
+  "server": {
+    "androidScheme": "https",
+    "cleartext": true
+  }
+}

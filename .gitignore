@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+*.tsbuildinfo
+
+# Secrets (never commit)
+.env
+.env.*
+!.env.example
+!.env.android
+
+# Logs / runtime files
+*.log
+*.err
+npm-debug.log*
+yarn-error.log*
+*.pid
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Capacitor / Android build artifacts
+mobile/android/.gradle/
+mobile/android/build/
+mobile/android/app/build/
+mobile/android/app/release/
+mobile/android/capacitor.settings.gradle
+mobile/android/variables.gradle
+mobile/android/app/src/main/assets/public/
+mobile/android/app/src/main/assets/capacitor.config.json

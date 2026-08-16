@@ -1,0 +1,31 @@
+export const CATEGORIES = [
+  'Electronics',
+  'Phones & Tablets',
+  'Furniture',
+  'Home & Garden',
+  'Fashion & Clothing',
+  'Vehicles',
+  'Sports & Outdoors',
+  'Books & Media',
+  'Toys & Games',
+  'Appliances',
+  'Tools & Hardware',
+  'Beauty & Health',
+  'Other',
+];
+
+export const CATEGORY_EMOJI = {
+  Electronics: '💻',
+  'Phones & Tablets': '📱',
+  Furniture: '🛋️',
+  'Home & Garden': '🏡',
+  'Fashion & Clothing': '👗',
+  Vehicles: '🚗',
+  'Sports & Outdoors': '⚽',
+  'Books & Media': '📚',
+  'Toys & Games': '🧸',
+  Appliances: '🔌',
+  'Tools & Hardware': '🔧',
+  'Beauty & Health': '💄',
+  Other: '📦',
+};

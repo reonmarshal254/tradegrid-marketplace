@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Background with gradient -->
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4f46e5;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#7c3aed;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="512" height="512" rx="105" fill="url(#grad)"/>
+  
+  <!-- Grid pattern (representing marketplace/trading) -->
+  <g opacity="0.15">
+    <path d="M 128 128 L 384 128 L 384 384 L 128 384 Z" fill="none" stroke="white" stroke-width="24"/>
+    <line x1="256" y1="128" x2="256" y2="384" stroke="white" stroke-width="24"/>
+    <line x1="128" y1="256" x2="384" y2="256" stroke="white" stroke-width="24"/>
+  </g>
+  
+  <!-- Shopping bag icon -->
+  <g transform="translate(256, 256)">
+    <!-- Bag body -->
+    <path d="M -80 -40 L -80 100 A 10 10 0 0 0 -70 110 L 70 110 A 10 10 0 0 0 80 100 L 80 -40 Z" 
+          fill="white" stroke="none"/>
+    
+    <!-- Bag handle -->
+    <path d="M -50 -40 A 50 50 0 0 1 50 -40" 
+          fill="none" stroke="white" stroke-width="20" stroke-linecap="round"/>
+    
+    <!-- Tag icon (representing secondhand/resale) -->
+    <g transform="translate(0, 15)">
+      <circle cx="-25" cy="0" r="28" fill="#4f46e5"/>
+      <text x="-25" y="12" font-family="Arial, sans-serif" font-size="32" font-weight="bold" 
+            fill="white" text-anchor="middle">$</text>
+    </g>
+  </g>
+  
+  <!-- Text badge at bottom -->
+  <g transform="translate(256, 440)">
+    <rect x="-60" y="-18" width="120" height="36" rx="18" fill="white" opacity="0.95"/>
+    <text x="0" y="6" font-family="Arial, sans-serif" font-size="24" font-weight="bold" 
+          fill="#4f46e5" text-anchor="middle">TG</text>
+  </g>
+</svg>

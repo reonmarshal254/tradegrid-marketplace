@@ -1,0 +1,34 @@
+# Render deployment for the full-stack app (frontend + backend served from one service).
+# The Express server serves both /api and the built frontend from frontend/dist.
+#
+# Required env vars to set in the Render dashboard (see backend/.env):
+#   NODE_ENV=production
+#   DATABASE_URL (or DB_HOST/DB_PORT/DB_NAME/DB_USER/DB_PASSWORD + DB_SSL=true)
+#   JWT_SECRET
+#   CLIENT_URL=https://<your-render-service-name>.onrender.com,https://your-frontend-domain
+#   CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET
+#   SMTP_HOST, SMTP_PORT, SMTP_SECURE, SMTP_USER, SMTP_PASS, MAIL_FROM
+#   GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
+#   VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT
+#   PAYSTACK_SECRET_KEY, PAYSTACK_PUBLIC_KEY
+
+services:
+  - type: web
+    name: tradegrid-backend
+    runtime: node
+    plan: free
+    rootDir: .
+    buildCommand: npm run install:all && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      # Public frontend keys baked into the built web app (set secrets in the
+      # dashboard instead: DATABASE_URL, JWT_SECRET, CLOUDINARY_*, SMTP_*,
+      # GOOGLE_CLIENT_SECRET, VAPID_*, PAYSTACK_SECRET_KEY)
+      - key: VITE_GOOGLE_CLIENT_ID
+        value: 255326841847-6rfuctsa2htd7ssiempuv87oobg5uvp1.apps.googleusercontent.com
+      - key: VITE_PAYSTACK_PUBLIC_KEY
+        value: pk_live_8f1b4baa9bb2be96c540cf208204663141b4ae8a
