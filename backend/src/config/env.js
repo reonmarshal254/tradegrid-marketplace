@@ -81,6 +81,7 @@ const env = {
     keyId: process.env.B2_KEY_ID,
     appKey: process.env.B2_APP_KEY,
     bucketId: process.env.B2_BUCKET_ID,
+    bucketName: process.env.B2_BUCKET_NAME || 'tradegrid',
     endpoint: process.env.B2_ENDPOINT || 's3.us-east-005.backblazeb2.com',
   },
 };

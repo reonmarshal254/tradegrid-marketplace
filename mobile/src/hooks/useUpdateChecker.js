@@ -17,7 +17,7 @@ export function useUpdateChecker() {
           versionName: latest.version_name,
           versionCode: latest.version_code,
           releaseNotes: latest.release_notes,
-          apkUrl: latest.apk_url,
+          apkUrl: latest.download_url || latest.apk_url,
           fileSize: latest.file_size,
         });
       }

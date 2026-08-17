@@ -754,12 +754,22 @@ const deleteAppVersion = async (req, res) => {
 
 const getLatestAppVersion = async (req, res) => {
   const { rows } = await query(
-    'SELECT version_code, version_name, release_notes, apk_url, file_size, created_at FROM app_versions WHERE is_active = true ORDER BY version_code DESC LIMIT 1'
+    'SELECT version_code, version_name, release_notes, apk_url, apk_public_id, file_size, created_at FROM app_versions WHERE is_active = true ORDER BY version_code DESC LIMIT 1'
   );
   if (rows.length === 0) {
     return res.json({ version: null });
   }
-  res.json({ version: rows[0] });
+  const version = rows[0];
+  // Generate a 1-hour pre-signed download URL from B2
+  if (version.apk_public_id) {
+    try {
+      const { getApkDownloadUrl } = require('../services/b2');
+      version.download_url = await getApkDownloadUrl(version.apk_public_id, 3600);
+    } catch (err) {
+      console.error('[app-version] Failed to generate download URL:', err.message);
+    }
+  }
+  res.json({ version });
 };
 
 module.exports = {

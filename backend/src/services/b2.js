@@ -1,10 +1,11 @@
 'use strict';
-const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
+const { S3Client, PutObjectCommand, GetObjectCommand } = require('@aws-sdk/client-s3');
+const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 const env = require('../config/env');
 
 const b2 = new S3Client({
   endpoint: `https://${env.b2.endpoint}`,
-  region: 'us-east-005',
+  region: 'us-west-004',
   credentials: {
     accessKeyId: env.b2.keyId,
     secretAccessKey: env.b2.appKey,
@@ -20,12 +21,17 @@ async function uploadApkToB2(buffer, fileName) {
     Key: key,
     Body: buffer,
     ContentType: 'application/vnd.android.package-archive',
-    ACL: 'public-read',
   }));
 
-  // Public URL format for B2 S3-compatible endpoint
-  const publicUrl = `https://${env.b2.bucketId}.${env.b2.endpoint}/${key}`;
-  return { url: publicUrl, key };
+  return { url: `b2://${env.b2.bucketName}/${key}`, key };
 }
 
-module.exports = { uploadApkToB2 };
+async function getApkDownloadUrl(key, expiresIn = 3600) {
+  const command = new GetObjectCommand({
+    Bucket: env.b2.bucketId,
+    Key: key,
+  });
+  return getSignedUrl(b2, command, { expiresIn });
+}
+
+module.exports = { uploadApkToB2, getApkDownloadUrl };
