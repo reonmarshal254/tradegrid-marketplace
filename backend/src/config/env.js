@@ -70,7 +70,8 @@ const env = {
   },
   googleClientId: process.env.GOOGLE_CLIENT_ID,
   googleClientSecret: process.env.GOOGLE_CLIENT_SECRET,
-  resendApiKey: process.env.RESEND_API_KEY,
+  brevoApiKey: process.env.BREVO_API_KEY,
+  brevoSender: process.env.BREVO_SENDER,
   vapid: {
     publicKey: process.env.VAPID_PUBLIC_KEY,
     privateKey: process.env.VAPID_PRIVATE_KEY,

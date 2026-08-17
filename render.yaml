@@ -7,8 +7,8 @@
 #   JWT_SECRET
 #   CLIENT_URL=https://tradegrid-marketplace.onrender.com,https://tradegrid-backend.onrender.com
 #   CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET
-#   RESEND_API_KEY (free tier: 100 emails/day — sign up at resend.com)
-#   SMTP_HOST, SMTP_PORT, SMTP_SECURE, SMTP_USER, SMTP_PASS, MAIL_FROM (fallback if no RESEND_API_KEY)
+#   BREVO_API_KEY, BREVO_SENDER (primary email — 300/day free, any recipient)
+#   SMTP_HOST, SMTP_PORT, SMTP_SECURE, SMTP_USER, SMTP_PASS, MAIL_FROM (fallback)
 #   GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
 #   VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT
 #   PAYSTACK_SECRET_KEY, PAYSTACK_PUBLIC_KEY
@@ -27,7 +27,7 @@ services:
       - key: PORT
         value: 10000
       # Public frontend keys baked into the built web app (set secrets in the
-      # dashboard instead: DATABASE_URL, JWT_SECRET, CLOUDINARY_*, SMTP_*,
+      # dashboard instead: DATABASE_URL, JWT_SECRET, CLOUDINARY_*, BREVO_*,
       # GOOGLE_CLIENT_SECRET, VAPID_*, PAYSTACK_SECRET_KEY)
       - key: VITE_GOOGLE_CLIENT_ID
         value: 255326841847-6rfuctsa2htd7ssiempuv87oobg5uvp1.apps.googleusercontent.com

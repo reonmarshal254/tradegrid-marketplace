@@ -12,7 +12,7 @@ function logConfig() {
     console.log(`  ${ok ? '✓' : '✗'} ${label}${extra ? ` — ${extra}` : ''}`);
 
   console.log('[config]');
-  line('Email', mailer.isConfigured(), env.resendApiKey ? 'Resend API' : env.smtp.user || 'no provider');
+  line('Email', mailer.isConfigured(), env.brevoApiKey ? 'Brevo API' : env.smtp.user || 'no provider');
   line('Web Push (VAPID)', push.isConfigured, env.vapid.publicKey ? 'keys present' : 'VAPID keys missing');
   line('Cloudinary', Boolean(env.cloudinary.cloudName && env.cloudinary.apiKey), env.cloudinary.cloudName || 'missing');
   line('Google OAuth', Boolean(env.googleClientId && env.googleClientSecret), env.googleClientId ? 'client configured' : 'client missing');

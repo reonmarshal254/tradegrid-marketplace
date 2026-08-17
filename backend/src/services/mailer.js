@@ -17,11 +17,9 @@ function getTransporter() {
 }
 
 function isConfigured() {
-  return Boolean(env.resendApiKey || (env.smtp.host && env.smtp.user));
+  return Boolean(env.brevoApiKey || (env.smtp.host && env.smtp.user));
 }
 
-// Base frontend URL used for email buttons/links (no trailing slash).
-// Falls back to the first CLIENT_URL entry; never localhost in production.
 function frontendUrl() {
   return env.frontendUrl;
 }
@@ -32,30 +30,31 @@ async function sendMail({ to, subject, html, text }) {
     return { skipped: true };
   }
 
-  // Use Resend API if key is set (works on Render free tier)
-  if (env.resendApiKey) {
-    const res = await fetch('https://api.resend.com/emails', {
+  // Brevo API (sends to any email, 300/day free)
+  if (env.brevoApiKey) {
+    const res = await fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${env.resendApiKey}`,
+        'api-key': env.brevoApiKey,
         'Content-Type': 'application/json',
+        'accept': 'application/json',
       },
       body: JSON.stringify({
-        from: env.smtp.from || 'TRADEGRID <onboarding@resend.dev>',
-        to: [to],
+        sender: { name: 'TRADEGRID', email: env.brevoSender || 'oyoookoth42@gmail.com' },
+        to: [{ email: to }],
         subject,
-        html,
-        text,
+        htmlContent: html,
+        textContent: text,
       }),
     });
     if (!res.ok) {
       const body = await res.text();
-      throw new Error(`Resend API error ${res.status}: ${body}`);
+      throw new Error(`Brevo API error ${res.status}: ${body}`);
     }
     return res.json();
   }
 
-  // Fallback to SMTP (nodemailer)
+  // Fallback: SMTP via Nodemailer
   const info = await getTransporter().sendMail({
     from: env.smtp.from,
     to,
@@ -114,7 +113,6 @@ async function sendEmailChangeEmail(user, newEmail, token) {
   return sendMail({ to: newEmail, subject: 'Confirm your new email - TRADEGRID', html });
 }
 
-// Generic send function (for custom emails like advertisement notifications)
 async function send(to, subject, html, text) {
   return sendMail({ to, subject, html, text });
 }
