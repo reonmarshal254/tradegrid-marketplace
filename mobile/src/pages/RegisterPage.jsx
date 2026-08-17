@@ -6,7 +6,7 @@ import { Spinner } from '../components/Ui';
 import GoogleButton from '../components/GoogleButton';
 
 export default function RegisterPage() {
-  const { user, login } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({
     name: '',
@@ -42,17 +42,15 @@ export default function RegisterPage() {
     }
     setLoading(true);
     try {
-      await login(() =>
-        api.auth.register({
-          name: form.name,
-          email: form.email,
-          password: form.password,
-          phone: form.phone,
-          whatsapp: form.whatsapp,
-          location: form.location,
-        })
-      );
-      navigate('/', { replace: true });
+      const res = await api.auth.register({
+        name: form.name,
+        email: form.email,
+        password: form.password,
+        phone: form.phone,
+        whatsapp: form.whatsapp,
+        location: form.location,
+      });
+      navigate(`/verify-email?email=${encodeURIComponent(res.email)}`, { replace: true });
     } catch (err) {
       setError(err.message);
     } finally {

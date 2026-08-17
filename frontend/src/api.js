@@ -69,7 +69,7 @@ export const api = {
     me: () => request('/auth/me'),
     updateProfile: (data, isForm = false) =>
       request('/auth/me', { method: 'PUT', body: data, isForm }),
-    verifyEmail: (token) => request('/auth/verify-email', { method: 'POST', body: { token } }),
+    verifyEmail: (email, otp) => request('/auth/verify-email', { method: 'POST', body: { email, otp } }),
     resendVerification: (email) =>
       request('/auth/resend-verification', { method: 'POST', body: { email } }),
     forgotPassword: (email) =>

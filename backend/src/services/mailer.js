@@ -77,6 +77,20 @@ async function sendVerificationEmail(user, token) {
   return sendMail({ to: user.email, subject: 'Verify your email - TRADEGRID', html });
 }
 
+async function sendVerificationOTP(user, otp) {
+  const html = `
+  <div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;padding:24px;border:1px solid #e5e7eb;border-radius:12px">
+    <h2 style="color:#111827">Verify your email</h2>
+    <p style="color:#374151">Hi ${user.name}, enter the code below to verify your TRADEGRID account.</p>
+    <div style="background:#f3f4f6;padding:20px;border-radius:8px;text-align:center;margin:20px 0">
+      <p style="color:#6b7280;font-size:14px;margin:0 0 8px 0">Your verification code is:</p>
+      <div style="font-size:32px;font-weight:bold;color:#4f46e5;letter-spacing:8px;font-family:monospace">${otp}</div>
+    </div>
+    <p style="color:#9ca3af;font-size:12px">This code expires in 15 minutes. If you did not create an account, you can safely ignore this email.</p>
+  </div>`;
+  return sendMail({ to: user.email, subject: 'Verify your email - TRADEGRID', html });
+}
+
 async function sendPasswordResetOTP(user, otp) {
   const html = `
   <div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;padding:24px;border:1px solid #e5e7eb;border-radius:12px">
@@ -120,6 +134,7 @@ async function send(to, subject, html, text) {
 module.exports = {
   isConfigured,
   sendVerificationEmail,
+  sendVerificationOTP,
   sendPasswordResetOTP,
   sendWelcomeEmail,
   sendEmailChangeEmail,

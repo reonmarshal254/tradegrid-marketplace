@@ -8,7 +8,7 @@ const { signToken, generateToken, hashToken } = require('../utils/token');
 const mailer = require('../services/mailer');
 const { DEFAULT_SETTINGS } = require('../services/push');
 
-const VERIFY_TTL_MS = 24 * 60 * 60 * 1000;
+const VERIFY_TTL_MS = 15 * 60 * 1000; // 15 minutes for OTP
 const RESET_TTL_MS = 60 * 60 * 1000;
 
 function googleIsConfigured() {
@@ -117,15 +117,15 @@ const register = async (req, res) => {
   );
   const user = rows[0];
 
-  const token = generateToken();
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
   await query(
     `INSERT INTO email_verifications (user_id, token_hash, expires_at)
      VALUES ($1, $2, $3)`,
-    [user.id, hashToken(token), new Date(Date.now() + VERIFY_TTL_MS)]
+    [user.id, hashToken(otp), new Date(Date.now() + VERIFY_TTL_MS)]
   );
-  mailer.sendVerificationEmail(user, token).catch(() => {});
+  mailer.sendVerificationOTP(user, otp).catch(() => {});
 
-  issueTokens(res, user);
+  res.json({ message: 'Verification required. Check your email for the code.', email: user.email });
 };
 
 const login = async (req, res) => {
@@ -214,19 +214,27 @@ const me = async (req, res) => {
 };
 
 const verifyEmail = async (req, res) => {
-  const { token } = req.body;
-  if (!token) throw new ApiError(400, 'Verification token is required');
-  const tokenHash = hashToken(token);
+  const { email, otp } = req.body;
+  if (!email || !otp) throw new ApiError(400, 'Email and verification code are required');
+  if (!/^\d{6}$/.test(otp)) throw new ApiError(400, 'Verification code must be 6 digits');
+
+  const user = await findUserByEmail(email);
+  if (!user) throw new ApiError(404, 'No account found with this email');
+  if (user.email_verified_at) {
+    return res.json({ message: 'Email already verified', token: signToken(user), user: publicUser(user) });
+  }
+
+  const tokenHash = hashToken(otp);
 
   const { rows } = await query(
-    `SELECT * FROM email_verifications WHERE token_hash = $1 LIMIT 1`,
-    [tokenHash]
+    `SELECT * FROM email_verifications WHERE token_hash = $1 AND user_id = $2 ORDER BY created_at DESC LIMIT 1`,
+    [tokenHash, user.id]
   );
   const record = rows[0];
-  if (!record) throw new ApiError(400, 'Invalid verification token');
-  if (record.used_at) throw new ApiError(400, 'Verification token already used');
+  if (!record) throw new ApiError(400, 'Invalid verification code');
+  if (record.used_at) throw new ApiError(400, 'Verification code already used');
   if (new Date(record.expires_at).getTime() < Date.now()) {
-    throw new ApiError(400, 'Verification token has expired');
+    throw new ApiError(400, 'Verification code has expired. Please request a new one.');
   }
 
   const client = await require('../config/db').pool.connect();
@@ -242,9 +250,11 @@ const verifyEmail = async (req, res) => {
     client.release();
   }
 
-  const { rows: userRows } = await query('SELECT * FROM users WHERE id = $1', [record.user_id]);
-  mailer.sendWelcomeEmail(userRows[0]).catch(() => {});
-  res.json({ message: 'Email verified successfully' });
+  const { rows: userRows } = await query('SELECT * FROM users WHERE id = $1', [user.id]);
+  const verifiedUser = userRows[0];
+  touchLastLogin(verifiedUser.id);
+  mailer.sendWelcomeEmail(verifiedUser).catch(() => {});
+  res.json({ token: signToken(verifiedUser), user: publicUser(verifiedUser) });
 };
 
 const resendVerification = async (req, res) => {
@@ -254,14 +264,14 @@ const resendVerification = async (req, res) => {
   if (user.email_verified_at) {
     return res.json({ message: 'Email is already verified' });
   }
-  const token = generateToken();
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
   await query(
     `INSERT INTO email_verifications (user_id, token_hash, expires_at)
      VALUES ($1, $2, $3)`,
-    [user.id, hashToken(token), new Date(Date.now() + VERIFY_TTL_MS)]
+    [user.id, hashToken(otp), new Date(Date.now() + VERIFY_TTL_MS)]
   );
-  mailer.sendVerificationEmail(user, token).catch(() => {});
-  res.json({ message: 'Verification email sent' });
+  mailer.sendVerificationOTP(user, otp).catch(() => {});
+  res.json({ message: 'Verification code sent' });
 };
 
 const forgotPassword = async (req, res) => {
