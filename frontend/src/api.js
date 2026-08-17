@@ -160,6 +160,12 @@ export const api = {
       advertisements: () => request('/admin/advertisements'),
       updateAdvertisement: (id, body) => request(`/admin/advertisements/${id}`, { method: 'PATCH', body }),
       deleteAdvertisement: (id) => request(`/admin/advertisements/${id}`, { method: 'DELETE' }),
+      // App version management
+      appVersions: () => request('/admin/app-versions'),
+      createAppVersion: (formData) =>
+        request('/admin/app-versions', { method: 'POST', body: formData, isForm: true }),
+      deleteAppVersion: (id) => request(`/admin/app-versions/${id}`, { method: 'DELETE' }),
+      latestAppVersion: () => request('/app-version/latest'),
       supportChats: (status) => request(`/support-chat/admin/chats${status ? `?status=${status}` : ''}`),
       getSupportChat: (id) => request(`/support-chat/admin/chats/${id}`),
       supportChatUnread: () => request('/support-chat/admin/unread-count'),

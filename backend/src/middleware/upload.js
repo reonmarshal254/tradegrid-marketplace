@@ -35,4 +35,15 @@ const uploadAvatar = multer({
   limits: { fileSize: 4 * 1024 * 1024, files: 1 },
 }).single('avatar');
 
-module.exports = { uploadImages, uploadAvatar };
+const uploadApk = multer({
+  storage,
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype !== 'application/vnd.android.package-archive' && !file.originalname.endsWith('.apk')) {
+      return cb(new ApiError(400, 'Only .apk files are allowed'));
+    }
+    cb(null, true);
+  },
+  limits: { fileSize: 200 * 1024 * 1024, files: 1 },
+}).single('apk');
+
+module.exports = { uploadImages, uploadAvatar, uploadApk };

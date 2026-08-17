@@ -45,6 +45,7 @@ import AdminSupportPage from './pages/admin/AdminSupportPage';
 import AdminAnnouncementsPage from './pages/admin/AdminAnnouncementsPage';
 import AdminAdvertisementsPage from './pages/admin/AdminAdvertisementsPage';
 import AdminSubscriptionSettingsPage from './pages/admin/AdminSubscriptionSettingsPage';
+import AdminAppVersionsPage from './pages/admin/AdminAppVersionsPage';
 import MyProfilePage from './pages/MyProfilePage';
 import MyAdvertisementsPage from './pages/MyAdvertisementsPage';
 import CreateAdvertisementPage from './pages/CreateAdvertisementPage';
@@ -347,6 +348,14 @@ export default function App() {
             element={
               <AdminRoute>
                 <AdminSubscriptionSettingsPage />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/app-versions"
+            element={
+              <AdminRoute>
+                <AdminAppVersionsPage />
               </AdminRoute>
             }
           />

@@ -3,6 +3,7 @@ const router = require('express').Router();
 const controller = require('../controllers/adminController');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
 const asyncHandler = require('../utils/asyncHandler');
+const { uploadApk } = require('../middleware/upload');
 
 router.use(requireAuth, requireAdmin);
 
@@ -25,5 +26,10 @@ router.patch('/support/:id/close', asyncHandler(controller.closeSupportTicket));
 router.get('/advertisements', asyncHandler(controller.listAdvertisements));
 router.patch('/advertisements/:id', asyncHandler(controller.updateAdvertisement));
 router.delete('/advertisements/:id', asyncHandler(controller.deleteAdvertisement));
+
+// App version management
+router.get('/app-versions', asyncHandler(controller.listAppVersions));
+router.post('/app-versions', uploadApk, asyncHandler(controller.createAppVersion));
+router.delete('/app-versions/:id', asyncHandler(controller.deleteAppVersion));
 
 module.exports = router;

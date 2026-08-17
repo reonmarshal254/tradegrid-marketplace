@@ -7,6 +7,8 @@ import Navbar from './components/Navbar';
 import MobileNav, { isNavHidden } from './components/MobileNav';
 import LiveSupportWidget from './components/LiveSupportWidget';
 import OnboardingCheck from './components/OnboardingCheck';
+import UpdateModal from './components/UpdateModal';
+import { useUpdateChecker } from './hooks/useUpdateChecker';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminRoute from './components/AdminRoute';
 import HomePage from './pages/HomePage';
@@ -45,6 +47,7 @@ import AdminSupportPage from './pages/admin/AdminSupportPage';
 import AdminAnnouncementsPage from './pages/admin/AdminAnnouncementsPage';
 import AdminAdvertisementsPage from './pages/admin/AdminAdvertisementsPage';
 import AdminSubscriptionSettingsPage from './pages/admin/AdminSubscriptionSettingsPage';
+import AdminAppVersionsPage from './pages/admin/AdminAppVersionsPage';
 import MyProfilePage from './pages/MyProfilePage';
 import MyAdvertisementsPage from './pages/MyAdvertisementsPage';
 import CreateAdvertisementPage from './pages/CreateAdvertisementPage';
@@ -65,6 +68,7 @@ export default function App() {
   const { user } = useAuth();
   const location = useLocation();
   const modal = useModal();
+  const { updateInfo, dismiss } = useUpdateChecker();
 
   useEffect(() => {
     if (user && typeof Notification !== 'undefined' && Notification.permission === 'granted') {
@@ -103,6 +107,7 @@ export default function App() {
   return (
     <div className="min-h-screen flex flex-col">
       <OnboardingCheck />
+      {updateInfo && <UpdateModal version={updateInfo} onDismiss={dismiss} />}
       <Navbar />
       <main className={`flex-1 ${hideNav ? '' : 'pb-28'}`}>
         <Routes>
@@ -348,6 +353,14 @@ export default function App() {
             element={
               <AdminRoute>
                 <AdminSubscriptionSettingsPage />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/app-versions"
+            element={
+              <AdminRoute>
+                <AdminAppVersionsPage />
               </AdminRoute>
             }
           />

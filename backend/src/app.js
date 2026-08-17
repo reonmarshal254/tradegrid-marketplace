@@ -43,6 +43,19 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', time: new Date().toISOString() });
 });
 
+// Public: latest app version (for mobile update check)
+const { pool } = require('./config/db');
+app.get('/api/app-version/latest', async (req, res) => {
+  try {
+    const { rows } = await pool.query(
+      'SELECT version_code, version_name, release_notes, apk_url, file_size, created_at FROM app_versions WHERE is_active = true ORDER BY version_code DESC LIMIT 1'
+    );
+    res.json({ version: rows[0] || null });
+  } catch {
+    res.json({ version: null });
+  }
+});
+
 app.use('/api/auth', authRoutes);
 app.use('/api/account', accountRoutes);
 app.use('/api/items', itemRoutes);

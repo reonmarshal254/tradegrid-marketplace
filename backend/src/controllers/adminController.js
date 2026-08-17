@@ -702,15 +702,70 @@ const deleteAdvertisement = async (req, res) => {
   res.json({ message: 'Advertisement deleted successfully' });
 };
 
+const listAppVersions = async (req, res) => {
+  const { rows } = await query('SELECT * FROM app_versions ORDER BY version_code DESC');
+  res.json({ versions: rows });
+};
+
+const createAppVersion = async (req, res) => {
+  const { version_code, version_name, release_notes } = req.body;
+  if (!version_code || !version_name) {
+    throw new ApiError(400, 'version_code and version_name are required');
+  }
+  if (!req.file) {
+    throw new ApiError(400, 'APK file is required');
+  }
+
+  const { uploadToCloudinary } = require('../services/cloudinary');
+  const fs = require('fs');
+  const apkBuffer = fs.readFileSync(req.file.path);
+
+  const result = await uploadToCloudinary(apkBuffer, {
+    folder: 'tradegrid/apk',
+    resource_type: 'raw',
+    public_id: `tradegrid-v${version_name}-${Date.now()}`,
+  });
+
+  fs.unlink(req.file.path, () => {});
+
+  const { rows } = await query(
+    `INSERT INTO app_versions (version_code, version_name, release_notes, apk_url, apk_public_id, file_size)
+     VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+    [parseInt(version_code), version_name, release_notes || '', result.secure_url, result.public_id, req.file.size]
+  );
+  res.json({ version: rows[0] });
+};
+
+const deleteAppVersion = async (req, res) => {
+  const { id } = req.params;
+  const { rows } = await query('SELECT apk_public_id FROM app_versions WHERE id = $1', [id]);
+  if (rows[0]?.apk_public_id) {
+    const { deleteFromCloudinary } = require('../services/cloudinary');
+    await deleteFromCloudinary(rows[0].apk_public_id, 'raw');
+  }
+  await query('DELETE FROM app_versions WHERE id = $1', [id]);
+  res.json({ message: 'Version deleted' });
+};
+
+const getLatestAppVersion = async (req, res) => {
+  const { rows } = await query(
+    'SELECT version_code, version_name, release_notes, apk_url, file_size, created_at FROM app_versions WHERE is_active = true ORDER BY version_code DESC LIMIT 1'
+  );
+  if (rows.length === 0) {
+    return res.json({ version: null });
+  }
+  res.json({ version: rows[0] });
+};
+
 module.exports = {
   getStats,
   getActivity,
-  listReports,
-  resolveReport,
-  getInsights,
   listUsers,
   updateUser,
   deleteUser,
+  listReports,
+  resolveReport,
+  getInsights,
   listItems,
   updateItem,
   deleteItem,
@@ -720,4 +775,8 @@ module.exports = {
   listAdvertisements,
   updateAdvertisement,
   deleteAdvertisement,
+  listAppVersions,
+  createAppVersion,
+  deleteAppVersion,
+  getLatestAppVersion,
 };

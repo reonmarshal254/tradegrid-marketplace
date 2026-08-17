@@ -14,6 +14,7 @@ import {
   HeadsetIcon,
   CreditCardIcon,
   MegaphoneIcon,
+  UploadIcon,
 } from './Icons';
 
 const MENU_ITEMS = [
@@ -79,6 +80,12 @@ const MENU_ITEMS = [
     label: 'Subscriptions',
     icon: <CreditCardIcon className="w-5 h-5" />,
     path: '/admin/subscription-settings',
+  },
+  {
+    id: 'app-versions',
+    label: 'App Versions',
+    icon: <UploadIcon className="w-5 h-5" />,
+    path: '/admin/app-versions',
   },
 ];
 
