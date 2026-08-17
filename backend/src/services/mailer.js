@@ -17,7 +17,7 @@ function getTransporter() {
 }
 
 function isConfigured() {
-  return Boolean(env.smtp.host && env.smtp.user);
+  return Boolean(env.resendApiKey || (env.smtp.host && env.smtp.user));
 }
 
 // Base frontend URL used for email buttons/links (no trailing slash).
@@ -28,9 +28,34 @@ function frontendUrl() {
 
 async function sendMail({ to, subject, html, text }) {
   if (!isConfigured()) {
-    console.warn('[mailer] SMTP not configured, skipping send to', to);
+    console.warn('[mailer] not configured, skipping send to', to);
     return { skipped: true };
   }
+
+  // Use Resend API if key is set (works on Render free tier)
+  if (env.resendApiKey) {
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${env.resendApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: env.smtp.from || 'TRADEGRID <onboarding@resend.dev>',
+        to: [to],
+        subject,
+        html,
+        text,
+      }),
+    });
+    if (!res.ok) {
+      const body = await res.text();
+      throw new Error(`Resend API error ${res.status}: ${body}`);
+    }
+    return res.json();
+  }
+
+  // Fallback to SMTP (nodemailer)
   const info = await getTransporter().sendMail({
     from: env.smtp.from,
     to,
@@ -100,6 +125,6 @@ module.exports = {
   sendPasswordResetOTP,
   sendWelcomeEmail,
   sendEmailChangeEmail,
-  send,  // Export generic send function
-  sendMail,  // Export base sendMail function
+  send,
+  sendMail,
 };

@@ -85,9 +85,9 @@ export default function AnnouncementCarousel({ announcements = [] }) {
               )}
             </div>
 
-            {/* Navigation arrows for desktop */}
+            {/* Navigation arrows */}
             {announcements.length > 1 && (
-              <div className="hidden sm:flex items-center gap-2 shrink-0">
+              <div className="flex items-center gap-2 shrink-0">
                 <button
                   onClick={handlePrev}
                   disabled={isTransitioning}

@@ -156,7 +156,7 @@ export default function Navbar() {
           <span className="h-9 w-9 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 flex items-center justify-center text-white font-black text-lg shadow-md shadow-indigo-500/30 transition-transform duration-300 group-hover:rotate-6 group-hover:scale-105">
             TG
           </span>
-          <span className="hidden sm:block text-lg font-extrabold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+          <span className="text-lg font-extrabold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
             TRADEGRID
           </span>
         </Link>

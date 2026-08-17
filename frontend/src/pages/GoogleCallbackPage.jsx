@@ -11,6 +11,7 @@ export default function GoogleCallbackPage() {
   const code = searchParams.get('code');
   const state = searchParams.get('state');
   const error = searchParams.get('error');
+  const returnTo = searchParams.get('return_to');
   const attempted = useRef(false);
 
   useEffect(() => {
@@ -18,23 +19,53 @@ export default function GoogleCallbackPage() {
     attempted.current = true;
 
     if (error) {
+      if (returnTo) {
+        window.location.href = `${returnTo}?error=${encodeURIComponent(error)}`;
+        return;
+      }
       navigate('/login', { state: { google_error: `Google sign-in was cancelled (${error})` } });
       return;
     }
 
-    const expectedState = sessionStorage.getItem('sh_google_state');
-    sessionStorage.removeItem('sh_google_state');
-    if (!state || !expectedState || state !== expectedState) {
-      navigate('/login', { state: { google_error: 'Google sign-in failed: invalid state' } });
-      return;
-    }
-
     if (!code) {
+      if (returnTo) {
+        window.location.href = `${returnTo}?error=${encodeURIComponent('missing code')}`;
+        return;
+      }
       navigate('/login', { state: { google_error: 'Google sign-in failed: missing code' } });
       return;
     }
 
     const redirectUri = `${window.location.origin}/auth/google/callback`;
+
+    if (returnTo) {
+      const exchangeAndRedirect = async () => {
+        try {
+          const data = await api.auth.google({ code, redirect_uri: redirectUri });
+          const params = new URLSearchParams({
+            token: data.token,
+            user: JSON.stringify(data.user),
+          });
+          window.location.href = `${returnTo}?${params.toString()}`;
+        } catch (err) {
+          window.location.href = `${returnTo}?error=${encodeURIComponent(err.message)}`;
+        }
+      };
+      exchangeAndRedirect();
+      return;
+    }
+
+    if (!state) {
+      navigate('/login', { state: { google_error: 'Google sign-in failed: invalid state' } });
+      return;
+    }
+
+    const expectedState = sessionStorage.getItem('sh_google_state');
+    sessionStorage.removeItem('sh_google_state');
+    if (!expectedState || state !== expectedState) {
+      navigate('/login', { state: { google_error: 'Google sign-in failed: invalid state' } });
+      return;
+    }
 
     login(() => api.auth.google({ code, redirect_uri: redirectUri }))
       .then(() => navigate('/', { replace: true }))
@@ -43,7 +74,7 @@ export default function GoogleCallbackPage() {
           state: { google_error: `Google sign-in failed: ${err.message}` },
         })
       );
-  }, [code, state, error, login, navigate]);
+  }, [code, state, error, login, navigate, returnTo]);
 
   return (
     <div className="max-w-md mx-auto px-4 py-24 text-center">

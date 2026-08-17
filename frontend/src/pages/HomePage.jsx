@@ -28,7 +28,6 @@ export default function HomePage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [searchInput, setSearchInput] = useState('');
-  const [topItems, setTopItems] = useState([]);
   const [featuredItems, setFeaturedItems] = useState([]);
   const [promoItems, setPromoItems] = useState([]);
   const [advertisements, setAdvertisements] = useState([]);
@@ -45,28 +44,24 @@ export default function HomePage() {
       setTotalListings((prev) => prev + 1);
     },
     onStatusChange: ({ itemId, status }) => {
-      // Remove sold/deleted items from lists
       if (status === 'sold' || status === 'removed') {
-        setTopItems((prev) => prev.filter(i => i.id !== itemId));
         setFeaturedItems((prev) => prev.filter(i => i.id !== itemId));
         setPromoItems((prev) => prev.filter(i => i.id !== itemId));
       }
     },
     onDeleted: ({ itemId }) => {
-      setTopItems((prev) => prev.filter(i => i.id !== itemId));
       setFeaturedItems((prev) => prev.filter(i => i.id !== itemId));
       setPromoItems((prev) => prev.filter(i => i.id !== itemId));
     },
   });
-  
-  
-  
+
+
+
   useEffect(() => {
     async function load() {
       setLoading(true);
       try {
-        const [top, featured, promo, cats, all, announceData, ads] = await Promise.all([
-          api.items.list({ sort: 'reactions', limit: 10 }),
+        const [featured, promo, cats, all, announceData, ads] = await Promise.all([
           api.items.list({ featured: 'true', sort: 'newest', limit: 10 }),
           api.items.list({ promo: 'true', sort: 'newest', limit: 10 }),
           api.items.categories(),
@@ -74,7 +69,6 @@ export default function HomePage() {
           api.announcements.listActive(),
           api.advertisements.getApproved({ limit: 6 })
         ]);
-        setTopItems(top.items);
         setFeaturedItems(featured.items);
         setPromoItems(promo.items);
         setCategories((cats.categories || []).slice(0, 8));
@@ -106,9 +100,6 @@ export default function HomePage() {
     }
     try {
       const data = await api.items.react(item.id);
-      if (topItems.some((i) => i.id === item.id)) {
-        setTopItems((l) => l.map((i) => (i.id === item.id ? data.item : i)));
-      }
       if (featuredItems.some((i) => i.id === item.id)) {
         setFeaturedItems((l) => l.map((i) => (i.id === item.id ? data.item : i)));
       }
@@ -122,7 +113,7 @@ export default function HomePage() {
 
   function ItemRow({ icon, title, subtitle, link, items, accent = 'indigo', showAds = false }) {
     if (!loading && items.length === 0) return null;
-    
+
     // Create mixed array with ads injected every 4-5 items
     const mixedItems = [];
     const availableAds = [...advertisements];
@@ -131,7 +122,7 @@ export default function HomePage() {
     if (showAds && availableAds.length > 0) {
       for (let i = 0; i < items.length; i++) {
         mixedItems.push({ type: 'item', data: items[i] });
-        
+
         // Inject ad every 4-5 items
         if ((i + 1) % 4 === 0 && adIndex < availableAds.length) {
           mixedItems.push({ type: 'ad', data: availableAds[adIndex] });
@@ -143,7 +134,7 @@ export default function HomePage() {
         mixedItems.push({ type: 'item', data: item });
       });
     }
-    
+
     return (
       <section className="mb-12">
         <div className="flex items-center justify-between gap-4 mb-5">
@@ -177,16 +168,16 @@ export default function HomePage() {
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-5">
             {mixedItems.map((mixedItem, index) => (
               mixedItem.type === 'ad' ? (
-                <AdCard 
-                  key={`ad-${mixedItem.data.id}`} 
+                <AdCard
+                  key={`ad-${mixedItem.data.id}`}
                   ad={mixedItem.data}
                   onView={() => console.log('Ad viewed:', mixedItem.data.title)}
                 />
               ) : (
-                <ItemCard 
-                  key={mixedItem.data.id} 
-                  item={mixedItem.data} 
-                  onReact={handleReact} 
+                <ItemCard
+                  key={mixedItem.data.id}
+                  item={mixedItem.data}
+                  onReact={handleReact}
                 />
               )
             ))}
@@ -283,17 +274,6 @@ export default function HomePage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        {/* Top products */}
-        <ItemRow
-          icon={<StarIcon className="w-5 h-5" />}
-          title="Top products"
-          subtitle="The most popular items right now"
-          link={{ to: '/items?sort=reactions', label: 'See all' }}
-          items={topItems}
-          accent="indigo"
-          showAds={true}
-        />
-
         {/* Featured */}
         <ItemRow
           icon={<CheckCircleIcon className="w-5 h-5" />}
@@ -379,6 +359,58 @@ export default function HomePage() {
       </div>
 
       <VideoAdGate />
+
+      {/* Footer */}
+      <footer className="mt-16 border-t border-gray-200 py-8 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <p className="text-sm text-gray-500">
+            &copy; 2026 TRADEGRID. All Rights Reserved.
+          </p>
+          <p className="mt-2 text-sm text-gray-400">
+            Powered by{' '}
+            <span className="inline-block font-semibold text-indigo-600">
+              <TypewriterText text="MCOKOTH Technologies" />
+            </span>
+          </p>
+        </div>
+      </footer>
     </div>
+  );
+}
+
+function TypewriterText({ text, speed = 80, pauseMs = 1200 }) {
+  const [displayed, setDisplayed] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+  const indexRef = useRef(0);
+
+  useEffect(() => {
+    let timer;
+    if (!isDeleting) {
+      if (indexRef.current < text.length) {
+        timer = setTimeout(() => {
+          indexRef.current += 1;
+          setDisplayed(text.slice(0, indexRef.current));
+        }, speed);
+      } else {
+        timer = setTimeout(() => setIsDeleting(true), pauseMs);
+      }
+    } else {
+      if (indexRef.current > 0) {
+        timer = setTimeout(() => {
+          indexRef.current -= 1;
+          setDisplayed(text.slice(0, indexRef.current));
+        }, speed / 2);
+      } else {
+        timer = setTimeout(() => setIsDeleting(false), pauseMs / 2);
+      }
+    }
+    return () => clearTimeout(timer);
+  }, [displayed, isDeleting, text, speed, pauseMs]);
+
+  return (
+    <span>
+      {displayed}
+      <span className="inline-block w-0.5 h-4 bg-indigo-600 ml-0.5 animate-pulse align-middle" />
+    </span>
   );
 }

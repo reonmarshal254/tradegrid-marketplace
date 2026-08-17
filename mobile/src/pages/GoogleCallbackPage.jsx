@@ -22,13 +22,6 @@ export default function GoogleCallbackPage() {
       return;
     }
 
-    const expectedState = sessionStorage.getItem('sh_google_state');
-    sessionStorage.removeItem('sh_google_state');
-    if (!state || !expectedState || state !== expectedState) {
-      navigate('/login', { state: { google_error: 'Google sign-in failed: invalid state' } });
-      return;
-    }
-
     if (!code) {
       navigate('/login', { state: { google_error: 'Google sign-in failed: missing code' } });
       return;
