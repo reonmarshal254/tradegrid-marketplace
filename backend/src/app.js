@@ -5,6 +5,7 @@ const helmet = require('helmet');
 const path = require('path');
 const env = require('./config/env');
 const { notFound, errorHandler } = require('./middleware/error');
+const { pool } = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const accountRoutes = require('./routes/accountRoutes');
 const itemRoutes = require('./routes/itemRoutes');
@@ -21,6 +22,29 @@ const analyticsRoutes = require('./routes/analyticsRoutes');
 const subscriptionSettingsRoutes = require('./routes/subscriptionSettingsRoutes');
 
 const app = express();
+
+// Auto-run schema migration on startup (safe — all statements use IF NOT EXISTS / ADD COLUMN IF NOT EXISTS)
+(async () => {
+  try {
+    const fs = require('fs');
+    const schema = fs.readFileSync(path.join(__dirname, 'db/schema.sql'), 'utf8');
+    // Split into individual statements so one failing index doesn't block the rest
+    const statements = schema.split(';').map(s => s.trim()).filter(Boolean);
+    for (const stmt of statements) {
+      try {
+        await pool.query(stmt);
+      } catch (err) {
+        // Log but don't block — indexes/tables may already exist
+        if (!err.message.includes('already exists')) {
+          console.error('[migrate] statement error:', err.message.split('\n')[0]);
+        }
+      }
+    }
+    console.log('[migrate] schema applied');
+  } catch (err) {
+    console.error('[migrate] schema error:', err.message);
+  }
+})();
 
 app.set('trust proxy', 1);
 
@@ -44,13 +68,19 @@ app.get('/api/health', (req, res) => {
 });
 
 // Public: latest app version (for mobile update check)
-const { pool } = require('./config/db');
 app.get('/api/app-version/latest', async (req, res) => {
   try {
     const { rows } = await pool.query(
-      'SELECT version_code, version_name, release_notes, apk_url, file_size, created_at FROM app_versions WHERE is_active = true ORDER BY version_code DESC LIMIT 1'
+      'SELECT version_code, version_name, release_notes, apk_url, apk_public_id, file_size, created_at FROM app_versions WHERE is_active = true ORDER BY version_code DESC LIMIT 1'
     );
-    res.json({ version: rows[0] || null });
+    const version = rows[0] || null;
+    if (version?.apk_public_id) {
+      try {
+        const { getApkDownloadUrl } = require('./services/b2');
+        version.download_url = await getApkDownloadUrl(version.apk_public_id, 3600);
+      } catch { /* ignore */ }
+    }
+    res.json({ version });
   } catch {
     res.json({ version: null });
   }

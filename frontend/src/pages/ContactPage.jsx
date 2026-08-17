@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { WhatsAppIcon, PhoneIcon, MapPinIcon } from '../components/Icons';
 
-const WHATSAPP_NUMBER = '2348012345678';
+const WHATSAPP_NUMBER = '254742041208';
 
 export default function ContactPage() {
   const [form, setForm] = useState({ name: '', email: '', message: '' });
@@ -113,7 +113,7 @@ export default function ContactPage() {
                 </span>
                 <span>
                   <span className="block text-xs text-gray-500">Location</span>
-                  <span className="font-medium">Lagos, Nigeria</span>
+                  <span className="font-medium">Nairobi, Kenya</span>
                 </span>
               </div>
             </div>
