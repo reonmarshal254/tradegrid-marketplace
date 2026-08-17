@@ -716,22 +716,18 @@ const createAppVersion = async (req, res) => {
     throw new ApiError(400, 'APK file is required');
   }
 
-  const { uploadToCloudinary } = require('../services/cloudinary');
+  const { uploadApkToB2 } = require('../services/b2');
   const fs = require('fs');
   const apkBuffer = fs.readFileSync(req.file.path);
+  const fileName = `tradegrid-v${version_name}-${Date.now()}.apk`;
 
-  const result = await uploadToCloudinary(apkBuffer, {
-    folder: 'tradegrid/apk',
-    resource_type: 'raw',
-    public_id: `tradegrid-v${version_name}-${Date.now()}`,
-  });
-
+  const result = await uploadApkToB2(apkBuffer, fileName);
   fs.unlink(req.file.path, () => {});
 
   const { rows } = await query(
     `INSERT INTO app_versions (version_code, version_name, release_notes, apk_url, apk_public_id, file_size)
      VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-    [parseInt(version_code), version_name, release_notes || '', result.secure_url, result.public_id, req.file.size]
+    [parseInt(version_code), version_name, release_notes || '', result.url, result.key, req.file.size]
   );
   res.json({ version: rows[0] });
 };
@@ -740,8 +736,17 @@ const deleteAppVersion = async (req, res) => {
   const { id } = req.params;
   const { rows } = await query('SELECT apk_public_id FROM app_versions WHERE id = $1', [id]);
   if (rows[0]?.apk_public_id) {
-    const { deleteFromCloudinary } = require('../services/cloudinary');
-    await deleteFromCloudinary(rows[0].apk_public_id, 'raw');
+    try {
+      const { S3Client, DeleteObjectCommand } = require('@aws-sdk/client-s3');
+      const env = require('../config/env');
+      const s3 = new S3Client({
+        endpoint: `https://${env.b2.endpoint}`,
+        region: 'us-east-005',
+        credentials: { accessKeyId: env.b2.keyId, secretAccessKey: env.b2.appKey },
+        forcePathStyle: true,
+      });
+      await s3.send(new DeleteObjectCommand({ Bucket: env.b2.bucketId, Key: rows[0].apk_public_id }));
+    } catch { /* ignore */ }
   }
   await query('DELETE FROM app_versions WHERE id = $1', [id]);
   res.json({ message: 'Version deleted' });

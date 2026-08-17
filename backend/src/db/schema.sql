@@ -361,3 +361,16 @@ CREATE INDEX IF NOT EXISTS idx_ad_clicks_user ON advertisement_clicks(user_id, c
 -- Add subscription plan to users table
 ALTER TABLE users ADD COLUMN IF NOT EXISTS subscription_plan TEXT NOT NULL DEFAULT 'free' CHECK (subscription_plan IN ('free', 'personal', 'recommended', 'enterprise'));
 ALTER TABLE users ADD COLUMN IF NOT EXISTS subscription_expires_at TIMESTAMPTZ;
+
+-- App version tracking for in-app updates
+CREATE TABLE IF NOT EXISTS app_versions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  version_code INTEGER NOT NULL UNIQUE,
+  version_name TEXT NOT NULL,
+  release_notes TEXT,
+  apk_url TEXT NOT NULL,
+  apk_public_id TEXT,
+  file_size BIGINT,
+  is_active BOOLEAN NOT NULL DEFAULT true,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);

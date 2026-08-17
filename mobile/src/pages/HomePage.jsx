@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { App as CapacitorApp } from '@capacitor/app';
 import { useAuth } from '../auth/AuthContext';
 import { useItemSocket } from '../context/SocketContext';
 import { api } from '../api';
@@ -35,6 +36,7 @@ export default function HomePage() {
   const [totalListings, setTotalListings] = useState(0);
   const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [appVersion, setAppVersion] = useState('');
 
   // Real-time item updates via WebSocket
   useItemSocket({
@@ -56,6 +58,8 @@ export default function HomePage() {
   });
 
 
+
+  CapacitorApp.getInfo().then((info) => setAppVersion(info.version)).catch(() => {});
 
   useEffect(() => {
     async function load() {
@@ -372,6 +376,9 @@ export default function HomePage() {
               <TypewriterText text="MCOKOTH Technologies" />
             </span>
           </p>
+          {appVersion && (
+            <p className="mt-2 text-xs text-gray-400 font-medium">Version {appVersion}</p>
+          )}
         </div>
       </footer>
     </div>

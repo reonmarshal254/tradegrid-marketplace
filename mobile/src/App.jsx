@@ -7,6 +7,8 @@ import Navbar from './components/Navbar';
 import MobileNav, { isNavHidden } from './components/MobileNav';
 import LiveSupportWidget from './components/LiveSupportWidget';
 import OnboardingCheck from './components/OnboardingCheck';
+import SplashScreen from './components/SplashScreen';
+import PermissionsRequest from './components/PermissionsRequest';
 import UpdateModal from './components/UpdateModal';
 import { useUpdateChecker } from './hooks/useUpdateChecker';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -69,6 +71,8 @@ export default function App() {
   const location = useLocation();
   const modal = useModal();
   const { updateInfo, dismiss } = useUpdateChecker();
+  const [splashDone, setSplashDone] = useState(false);
+  const [permsDone, setPermsDone] = useState(false);
 
   useEffect(() => {
     if (user && typeof Notification !== 'undefined' && Notification.permission === 'granted') {
@@ -106,6 +110,8 @@ export default function App() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      {!splashDone && <SplashScreen onComplete={() => setSplashDone(true)} />}
+      {splashDone && !permsDone && <PermissionsRequest onDone={() => setPermsDone(true)} />}
       <OnboardingCheck />
       {updateInfo && <UpdateModal version={updateInfo} onDismiss={dismiss} />}
       <Navbar />
