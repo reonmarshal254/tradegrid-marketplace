@@ -26,6 +26,11 @@ app.set('trust proxy', 1);
 
 app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' },
+  contentSecurityPolicy: {
+    directives: {
+      imgSrc: ["'self'", 'data:', 'https://res.cloudinary.com'],
+    },
+  },
 }));
 app.use(cors({
   origin: env.clientUrl,

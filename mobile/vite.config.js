@@ -10,16 +10,16 @@ export default defineConfig({
     allowedHosts: [
       'localhost',
       'tradegrid-marketplace.vercel.app',
-      'philologic-debi-unsophisticatedly.ngrok-free.dev',
+      'tradegrid-marketplace.onrender.com',
     ],
 
     proxy: {
       '/api': {
-        target: 'https://philologic-debi-unsophisticatedly.ngrok-free.dev',
+        target: 'https://tradegrid-marketplace.onrender.com',
         changeOrigin: true,
       },
       '/socket.io': {
-        target: 'https://philologic-debi-unsophisticatedly.ngrok-free.dev',
+        target: 'https://tradegrid-marketplace.onrender.com',
         changeOrigin: true,
         ws: true, // Enable WebSocket proxying
       },

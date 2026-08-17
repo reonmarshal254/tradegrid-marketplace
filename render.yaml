@@ -5,7 +5,7 @@
 #   NODE_ENV=production
 #   DATABASE_URL (or DB_HOST/DB_PORT/DB_NAME/DB_USER/DB_PASSWORD + DB_SSL=true)
 #   JWT_SECRET
-#   CLIENT_URL=https://<your-render-service-name>.onrender.com,https://your-frontend-domain
+#   CLIENT_URL=https://tradegrid-marketplace.onrender.com,https://tradegrid-backend.onrender.com
 #   CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET
 #   SMTP_HOST, SMTP_PORT, SMTP_SECURE, SMTP_USER, SMTP_PASS, MAIL_FROM
 #   GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
