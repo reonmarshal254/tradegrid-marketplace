@@ -10,7 +10,7 @@ function generateState() {
   return state;
 }
 
-export default function GoogleButton({ text = 'Sign in with Google' }) {
+export default function GoogleButton({ text = 'Sign in with Google', referralCode = '' }) {
   const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
   if (!clientId) {
@@ -27,6 +27,9 @@ export default function GoogleButton({ text = 'Sign in with Google' }) {
 
   function onClick() {
     const redirectUri = `${window.location.origin}/auth/google/callback`;
+    if (referralCode) {
+      sessionStorage.setItem('sh_referral_code', referralCode);
+    }
     const params = new URLSearchParams({
       client_id: clientId,
       redirect_uri: redirectUri,

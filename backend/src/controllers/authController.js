@@ -68,7 +68,7 @@ async function validatePassword(password) {
 }
 
 const register = async (req, res) => {
-  const { name, email, password, phone, whatsapp, location } = req.body;
+  const { name, email, password, phone, whatsapp, location, ref } = req.body;
   if (!name || !email || !password) {
     throw new ApiError(400, 'Name, email and password are required');
   }
@@ -108,14 +108,35 @@ const register = async (req, res) => {
     }
   }
 
+  // Resolve referral code
+  let referrerId = null;
+  if (ref && typeof ref === 'string' && ref.trim()) {
+    const { rows: referrerRows } = await query(
+      'SELECT id FROM users WHERE referral_code = $1',
+      [ref.trim().toUpperCase()]
+    );
+    if (referrerRows[0]) {
+      referrerId = referrerRows[0].id;
+    }
+  }
+
   const passwordHash = await bcrypt.hash(password, 12);
   const { rows } = await query(
-    `INSERT INTO users (name, email, password_hash, phone, whatsapp, location, settings)
-     VALUES ($1, $2, $3, $4, $5, $6, $7)
+    `INSERT INTO users (name, email, password_hash, phone, whatsapp, location, settings, referred_by)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
      RETURNING *`,
-    [name.trim(), email.toLowerCase(), passwordHash, phone || null, whatsapp || null, location || null, JSON.stringify(DEFAULT_SETTINGS)]
+    [name.trim(), email.toLowerCase(), passwordHash, phone || null, whatsapp || null, location || null, JSON.stringify(DEFAULT_SETTINGS), referrerId]
   );
   const user = rows[0];
+
+  // Create pending referral record if referred
+  if (referrerId) {
+    await query(
+      `INSERT INTO referrals (referrer_id, referred_id, referral_code, status)
+       VALUES ($1, $2, $3, 'pending')`,
+      [referrerId, user.id, ref.trim().toUpperCase()]
+    ).catch(() => {});
+  }
 
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
   await query(
@@ -149,7 +170,7 @@ const login = async (req, res) => {
 };
 
 const google = async (req, res) => {
-  const { code } = req.body;
+  const { code, ref } = req.body;
   if (!code) throw new ApiError(400, 'Google authorization code is required');
   if (!googleIsConfigured()) {
     throw new ApiError(500, 'Google sign-in is not configured on the server');
@@ -194,13 +215,45 @@ const google = async (req, res) => {
       user = await findUserByEmail(payload.email);
     }
   } else {
+    // Resolve referral code for Google sign-ups
+    let referrerId = null;
+    if (ref && typeof ref === 'string' && ref.trim()) {
+      const { rows: referrerRows } = await query(
+        'SELECT id FROM users WHERE referral_code = $1',
+        [ref.trim().toUpperCase()]
+      );
+      if (referrerRows[0]) referrerId = referrerRows[0].id;
+    }
+
     const { rows } = await query(
-      `INSERT INTO users (name, email, google_id, avatar_url, email_verified_at, settings)
-       VALUES ($1, $2, $3, $4, now(), $5)
+      `INSERT INTO users (name, email, google_id, avatar_url, email_verified_at, settings, referred_by)
+       VALUES ($1, $2, $3, $4, now(), $5, $6)
        RETURNING *`,
-      [payload.name || payload.email.split('@')[0], payload.email, payload.sub, payload.picture || null, JSON.stringify(DEFAULT_SETTINGS)]
+      [payload.name || payload.email.split('@')[0], payload.email, payload.sub, payload.picture || null, JSON.stringify(DEFAULT_SETTINGS), referrerId]
     );
     user = rows[0];
+
+    // Create pending referral record
+    if (referrerId) {
+      await query(
+        `INSERT INTO referrals (referrer_id, referred_id, referral_code, status)
+         VALUES ($1, $2, $3, 'registered')`,
+        [referrerId, user.id, ref.trim().toUpperCase()]
+      ).catch(() => {});
+      // Grant free trial immediately for Google sign-ups (no email verification needed)
+      const TRIAL_DAYS = 7;
+      const trialExpires = new Date(Date.now() + TRIAL_DAYS * 24 * 60 * 60 * 1000);
+      await query(
+        `UPDATE users SET subscription_plan = 'personal', subscription_expires_at = $1, free_trial_granted_at = now(), updated_at = now() WHERE id = $2`,
+        [trialExpires, user.id]
+      );
+      // Grant trial to referrer too
+      await query(
+        `UPDATE users SET subscription_plan = 'personal', subscription_expires_at = GREATEST(COALESCE(subscription_expires_at, now()), now()) + INTERVAL '${TRIAL_DAYS} days', free_trial_granted_at = now(), updated_at = now() WHERE id = $1 AND (subscription_expires_at IS NULL OR subscription_expires_at < now())`,
+        [referrerId]
+      );
+    }
+
     mailer.sendWelcomeEmail(user).catch(() => {});
   }
   touchLastLogin(user.id);
@@ -237,11 +290,34 @@ const verifyEmail = async (req, res) => {
     throw new ApiError(400, 'Verification code has expired. Please request a new one.');
   }
 
+  const TRIAL_DAYS = 7;
+  const trialExpires = new Date(Date.now() + TRIAL_DAYS * 24 * 60 * 60 * 1000);
+
   const client = await require('../config/db').pool.connect();
   try {
     await client.query('BEGIN');
     await client.query('UPDATE email_verifications SET used_at = now() WHERE id = $1', [record.id]);
     await client.query('UPDATE users SET email_verified_at = now(), updated_at = now() WHERE id = $1', [record.user_id]);
+
+    // Grant free trial if user was referred
+    if (user.referred_by) {
+      await client.query(
+        `UPDATE users SET subscription_plan = 'personal', subscription_expires_at = $1, free_trial_granted_at = now(), updated_at = now() WHERE id = $2`,
+        [trialExpires, record.user_id]
+      );
+      // Update referral status
+      await client.query(
+        `UPDATE referrals SET status = 'trial_granted', trial_granted_at = now(), registered_at = COALESCE(registered_at, now())
+         WHERE referred_id = $1 AND status IN ('pending', 'registered')`,
+        [record.user_id]
+      );
+      // Also grant trial to referrer
+      await client.query(
+        `UPDATE users SET subscription_plan = 'personal', subscription_expires_at = GREATEST(COALESCE(subscription_expires_at, now()), now()) + INTERVAL '${TRIAL_DAYS} days', free_trial_granted_at = now(), updated_at = now() WHERE id = $1 AND (subscription_expires_at IS NULL OR subscription_expires_at < now())`,
+        [user.referred_by]
+      );
+    }
+
     await client.query('COMMIT');
   } catch (err) {
     await client.query('ROLLBACK');

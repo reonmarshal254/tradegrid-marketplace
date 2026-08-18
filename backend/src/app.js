@@ -20,6 +20,7 @@ const advertisementRoutes = require('./routes/advertisementRoutes');
 const subscriptionRoutes = require('./routes/subscriptionRoutes');
 const analyticsRoutes = require('./routes/analyticsRoutes');
 const subscriptionSettingsRoutes = require('./routes/subscriptionSettingsRoutes');
+const referralRoutes = require('./routes/referralRoutes');
 
 const app = express();
 
@@ -100,6 +101,7 @@ app.use('/api/advertisements', advertisementRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/subscription-settings', subscriptionSettingsRoutes);
+app.use('/api/referrals', referralRoutes);
 
 const distDir = path.join(__dirname, '../../frontend/dist');
 if (require('fs').existsSync(distDir)) {

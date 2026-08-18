@@ -292,6 +292,13 @@ export default function Navbar() {
                       📢 My Advertisements
                     </Link>
                     <Link
+                      to="/affiliate"
+                      onClick={() => setMenuOpen(false)}
+                      className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-50 transition"
+                    >
+                      💰 Affiliate program
+                    </Link>
+                    <Link
                       to="/favorites"
                       onClick={() => setMenuOpen(false)}
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 transition"

@@ -363,6 +363,27 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS subscription_plan TEXT NOT NULL DEFAU
 ALTER TABLE users ADD COLUMN IF NOT EXISTS subscription_expires_at TIMESTAMPTZ;
 
 -- App version tracking for in-app updates
+-- Referral / Affiliate system
+CREATE TABLE IF NOT EXISTS referrals (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  referrer_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  referred_id UUID REFERENCES users(id) ON DELETE SET NULL,
+  referral_code VARCHAR(12) NOT NULL UNIQUE,
+  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'registered', 'trial_granted')),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  registered_at TIMESTAMPTZ,
+  trial_granted_at TIMESTAMPTZ
+);
+
+CREATE INDEX IF NOT EXISTS idx_referrals_referrer ON referrals(referrer_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_referrals_code ON referrals(referral_code) WHERE status = 'pending';
+CREATE INDEX IF NOT EXISTS idx_referrals_referred ON referrals(referred_id) WHERE referred_id IS NOT NULL;
+
+-- Add referral tracking columns to users
+ALTER TABLE users ADD COLUMN IF NOT EXISTS referral_code VARCHAR(12) UNIQUE;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS referred_by UUID REFERENCES users(id) ON DELETE SET NULL;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS free_trial_granted_at TIMESTAMPTZ;
+
 CREATE TABLE IF NOT EXISTS app_versions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   version_code INTEGER NOT NULL UNIQUE,

@@ -289,6 +289,13 @@ export const api = {
     getSettings: () => request('/subscription-settings'),
     updateSettings: (plan, body) => request(`/subscription-settings/${plan}`, { method: 'PATCH', body }),
   },
+
+  referrals: {
+    getProfile: () => request('/referrals/profile'),
+    getReferrals: () => request('/referrals/list'),
+    getShareData: () => request('/referrals/share-data'),
+    trackVisit: (code) => request(`/referrals/visit/${code}`),
+  },
 };
 
 export default api;

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { api } from '../api';
 import { Spinner } from '../components/Ui';
@@ -8,6 +8,8 @@ import GoogleButton from '../components/GoogleButton';
 export default function RegisterPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const referralCode = searchParams.get('ref') || '';
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -49,6 +51,7 @@ export default function RegisterPage() {
         phone: form.phone,
         whatsapp: form.whatsapp,
         location: form.location,
+        ...(referralCode ? { ref: referralCode } : {}),
       });
       navigate(`/verify-email?email=${encodeURIComponent(res.email)}`, { replace: true });
     } catch (err) {
@@ -69,8 +72,20 @@ export default function RegisterPage() {
           Join TRADEGRID to sell and discover great deals.
         </p>
 
+        {referralCode && (
+          <div className="mt-4 bg-gradient-to-r from-indigo-50 to-violet-50 border border-indigo-200 rounded-xl p-4 flex items-center gap-3">
+            <span className="shrink-0 h-10 w-10 rounded-full bg-gradient-to-br from-indigo-500 to-violet-500 text-white flex items-center justify-center text-lg">
+              🎁
+            </span>
+            <div>
+              <p className="text-sm font-semibold text-indigo-900">You were invited!</p>
+              <p className="text-xs text-indigo-600">Sign up and get a free 7-day premium trial</p>
+            </div>
+          </div>
+        )}
+
         <div className="mt-6">
-          <GoogleButton text="Sign up with Google" />
+          <GoogleButton text="Sign up with Google" referralCode={referralCode} />
         </div>
 
         <div className="my-6 flex items-center gap-3">

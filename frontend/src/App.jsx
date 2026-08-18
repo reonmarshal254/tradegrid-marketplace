@@ -61,6 +61,7 @@ import VerifyEmailPage from './pages/VerifyEmailPage';
 import NotFoundPage from './pages/NotFoundPage';
 import AdvertisePage from './pages/AdvertisePage';
 import PricingPage from './pages/PricingPage';
+import AffiliatePage from './pages/AffiliatePage';
 
 export default function App() {
   const { user } = useAuth();
@@ -164,6 +165,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <AnalyticsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/affiliate"
+            element={
+              <ProtectedRoute>
+                <AffiliatePage />
               </ProtectedRoute>
             }
           />

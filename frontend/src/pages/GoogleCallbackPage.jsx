@@ -41,7 +41,11 @@ export default function GoogleCallbackPage() {
     if (returnTo) {
       const exchangeAndRedirect = async () => {
         try {
-          const data = await api.auth.google({ code, redirect_uri: redirectUri });
+          const ref = sessionStorage.getItem('sh_referral_code');
+          sessionStorage.removeItem('sh_referral_code');
+          const payload = { code, redirect_uri: redirectUri };
+          if (ref) payload.ref = ref;
+          const data = await api.auth.google(payload);
           const params = new URLSearchParams({
             token: data.token,
             user: JSON.stringify(data.user),
@@ -67,7 +71,13 @@ export default function GoogleCallbackPage() {
       return;
     }
 
-    login(() => api.auth.google({ code, redirect_uri: redirectUri }))
+    login(() => {
+      const ref = sessionStorage.getItem('sh_referral_code');
+      sessionStorage.removeItem('sh_referral_code');
+      const payload = { code, redirect_uri: redirectUri };
+      if (ref) payload.ref = ref;
+      return api.auth.google(payload);
+    })
       .then(() => navigate('/', { replace: true }))
       .catch((err) =>
         navigate('/login', {
