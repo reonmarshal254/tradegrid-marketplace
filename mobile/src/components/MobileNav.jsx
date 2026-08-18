@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
-import { HomeIcon, GridIcon, UserIcon, MessageCircleIcon } from './Icons';
+import { HomeIcon, GridIcon, UserIcon, MessageCircleIcon, ArrowDownTrayIcon } from './Icons';
 
 const HIDDEN_PATHS = [
   '/admin',
@@ -25,7 +25,7 @@ const TABS = [
   { to: '/chat', label: 'Chats', icon: MessageCircleIcon, match: (p) => p.startsWith('/chat') },
 ];
 
-export default function MobileNav() {
+export default function MobileNav({ updateInfo, onShowUpdate }) {
   const { msgUnread } = useAuth();
   const location = useLocation();
 
@@ -33,6 +33,16 @@ export default function MobileNav() {
 
   return (
     <nav className="fixed bottom-0 inset-x-0 z-40 px-4 pb-[calc(env(safe-area-inset-bottom)+12px)] pt-2 pointer-events-none">
+      {/* Update button — floats above the nav pill */}
+      {updateInfo && (
+        <button
+          onClick={onShowUpdate}
+          className="mx-auto mb-2 flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-bold shadow-lg shadow-orange-500/30 pointer-events-auto active:scale-95 transition-all animate-bounce"
+        >
+          <ArrowDownTrayIcon className="w-4 h-4" />
+          Update to v{updateInfo.versionName}
+        </button>
+      )}
       <div className="mx-auto max-w-md rounded-full bg-white/95 backdrop-blur-xl shadow-lg ring-1 ring-black/5 p-1.5 flex items-center justify-between gap-1 pointer-events-auto animate-fade-up pill-glow">
         {TABS.map(({ to, label, icon: Icon, match }) => {
           const active = match(location.pathname);

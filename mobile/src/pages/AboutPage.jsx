@@ -29,6 +29,7 @@ export default function AboutPage() {
         great things deserve a second life. Whether you are decluttering your home or hunting
         for a bargain, TRADEGRID makes it easy to list an item and connect with real people
         in your community.
+        Built and maintained by <a href="https://mcokothtechologies.vercel.app" className="text-indigo-600">MCOKOTH Technologies</a>.
       </p>
 
       <div className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-6">

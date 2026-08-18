@@ -10,9 +10,21 @@ export function useUpdateChecker() {
     try {
       const info = await App.getInfo();
       const currentCode = info.versionCode;
+      console.log('[update] installed versionCode:', currentCode);
+
       const res = await api.admin.latestAppVersion();
+      console.log('[update] server response:', JSON.stringify(res));
+
       const latest = res.version;
-      if (latest && latest.version_code > currentCode) {
+      if (!latest) {
+        console.log('[update] no version found on server');
+        return;
+      }
+
+      console.log('[update] latest version_code:', latest.version_code, 'vs installed:', currentCode);
+
+      if (latest.version_code > currentCode) {
+        console.log('[update] update available! Setting updateInfo');
         setUpdateInfo({
           versionName: latest.version_name,
           versionCode: latest.version_code,
@@ -20,9 +32,11 @@ export function useUpdateChecker() {
           apkUrl: latest.download_url || latest.apk_url,
           fileSize: latest.file_size,
         });
+      } else {
+        console.log('[update] app is up to date');
       }
-    } catch {
-      /* ignore — user might not be logged in or server unreachable */
+    } catch (err) {
+      console.error('[update] check failed:', err.message);
     } finally {
       setChecking(false);
     }

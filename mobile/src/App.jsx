@@ -73,6 +73,12 @@ export default function App() {
   const { updateInfo, dismiss } = useUpdateChecker();
   const [splashDone, setSplashDone] = useState(false);
   const [permsDone, setPermsDone] = useState(false);
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
+
+  // Auto-show update modal on first detection
+  useEffect(() => {
+    if (updateInfo && !showUpdateModal) setShowUpdateModal(true);
+  }, [updateInfo]);
 
   useEffect(() => {
     if (user && typeof Notification !== 'undefined' && Notification.permission === 'granted') {
@@ -113,7 +119,12 @@ export default function App() {
       {!splashDone && <SplashScreen onComplete={() => setSplashDone(true)} />}
       {splashDone && !permsDone && <PermissionsRequest onDone={() => setPermsDone(true)} />}
       <OnboardingCheck />
-      {updateInfo && <UpdateModal version={updateInfo} onDismiss={dismiss} />}
+      {updateInfo && showUpdateModal && (
+        <UpdateModal
+          version={updateInfo}
+          onDismiss={() => { setShowUpdateModal(false); dismiss(); }}
+        />
+      )}
       <Navbar />
       <main className={`flex-1 ${hideNav ? '' : 'pb-28'}`}>
         <Routes>
@@ -379,7 +390,7 @@ export default function App() {
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </main>
-      {!isAdminPage && <MobileNav />}
+      {!isAdminPage && <MobileNav updateInfo={updateInfo} onShowUpdate={() => setShowUpdateModal(true)} />}
       {!isAdminPage && <LiveSupportWidget />}
     </div>
   );
