@@ -195,6 +195,16 @@ export default function HomePage() {
         <div className="absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-indigo-400/30 blur-3xl" />
         <div className="absolute inset-0 hero-grid" />
 
+        {/* Banner Image */}
+        <div className="absolute inset-0 flex items-center justify-end pointer-events-none">
+          <img
+            src="/banner.svg"
+            alt=""
+            className="w-[45%] max-w-[520px] opacity-20 lg:opacity-30 mix-blend-screen select-none"
+            aria-hidden="true"
+          />
+        </div>
+
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
           <div className="max-w-2xl">
             <span className="inline-flex items-center gap-1.5 bg-white/15 text-white text-xs font-semibold px-3 py-1 rounded-full ring-1 ring-white/20 backdrop-blur-sm">
